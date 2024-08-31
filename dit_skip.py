@@ -283,8 +283,9 @@ class DiT(nn.Module):
             if controlnet_block_samples is not None:
                 interval_control = len(self.in_blocks) / len(controlnet_block_samples) # e.g. 6 / 3 = 2.0
                 interval_control = int(np.ceil(interval_control)) # e.g. 2
-                x = x + controlnet_block_samples[idx // interval_control]
-            skips.append(x)
+                skips.append(x + controlnet_block_samples[idx // interval_control])
+            else:
+                skips.append(x)
 
         x = self.mid_block(x, c)                 # (N, T, D)
         if controlnet_mid_block_sample is not None:
