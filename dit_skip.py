@@ -258,8 +258,8 @@ class DiT(nn.Module):
         self, 
         x: torch.Tensor,
         t: torch.Tensor,
-        controlnet_block_samples: List[torch.Tensor] = None,
-        controlnet_mid_block_sample: List[torch.Tensor] = None,
+        controlnet_block_samples: List[torch.Tensor]=None,
+        controlnet_mid_block_sample: List[torch.Tensor]=None,
         y=None):
         """
         Forward pass of DiT.
@@ -280,7 +280,7 @@ class DiT(nn.Module):
         skips = []
         for idx, block in enumerate(self.in_blocks):
             x = block(x, c)                      # (N, T, D)
-            if controlnet_block_samples is not None:
+            if controlnet_block_samples and len(controlnet_block_samples) > 0:
                 interval_control = len(self.in_blocks) / len(controlnet_block_samples) # e.g. 6 / 3 = 2.0
                 interval_control = int(np.ceil(interval_control)) # e.g. 2
                 skips.append(x + controlnet_block_samples[idx // interval_control])
@@ -288,7 +288,7 @@ class DiT(nn.Module):
                 skips.append(x)
 
         x = self.mid_block(x, c)                 # (N, T, D)
-        if controlnet_mid_block_sample is not None:
+        if controlnet_mid_block_sample and len(controlnet_mid_block_sample) > 0:
             x = x + controlnet_mid_block_sample[0]
 
         for block in self.out_blocks:
@@ -296,7 +296,7 @@ class DiT(nn.Module):
 
         x = self.final_layer(x, c)               # (N, T, patch_size ** 2 * out_channels)
         x = self.unpatchify(x)                   # (N, out_channels, H, W)
-        x = self.final_conv(x)                   # (N, out_channels, H, W) å
+        x = self.final_conv(x)                   # (N, out_channels, H, W)
         return x
 
     def forward_with_cfg(self, x, t, y, cfg_scale):
